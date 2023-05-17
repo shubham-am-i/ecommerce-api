@@ -12,6 +12,7 @@ export const register = async (req, res) => {
     throw new ErrorResponse('Please provide all values', 400)
   }
 
+  // Check if user already exists
   const userExists = await User.findOne({ email })
   if (userExists) {
     // res.status(400)
@@ -19,12 +20,18 @@ export const register = async (req, res) => {
     throw new ErrorResponse('Someone on this planet had already taken this email', 400)
   }
 
+  // create user
   const user = await User.create({
     name,
     email,
     password,
   })
-  // const token = user.createJWT()
+  const token = user.createJWT()
+  const oneDay = 1000 * 60 * 60 * 24
+  res.cookie('token', token, {
+    httpOnly: true,
+    expires: new Date(Date.now() + oneDay),
+  })
   res.status(201).json({ user })
 }
 
