@@ -13,7 +13,7 @@ import morgan from 'morgan'
 import { notFound, errorHandler } from './middlewares/errorMiddleware.js'
 import connectDB from './db/connect.js'
 // import routers
-
+import authRouter from './routes/authRoutes.js'
 dotenv.config()
 const app = express()
 
@@ -25,6 +25,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // Mount Routers
+app.use('/api/v1/auth', authRouter)
 
 app.use(notFound)
 app.use(errorHandler)
