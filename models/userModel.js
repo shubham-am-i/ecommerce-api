@@ -1,7 +1,9 @@
 import mongoose from 'mongoose'
 import validator from 'validator'
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
 
-const userSchema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -34,4 +36,20 @@ const userSchema = new mongoose.Schema(
   },
 )
 
-export default mongoose.model('User', userSchema)
+UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return // will avoid double hashing the password
+  this.password = await bcrypt.hash(this.password, 10)
+})
+
+UserSchema.methods.createJWT = function () {
+  // return token
+  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_LIFETIME,
+  })
+}
+
+UserSchema.methods.matchPassword = async function (enteredPassword) {
+  return await bcrypt.compare(enteredPassword, this.password) // return boolean
+}
+
+export default mongoose.model('User', UserSchema)
